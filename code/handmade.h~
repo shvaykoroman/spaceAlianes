@@ -164,14 +164,15 @@ struct Player
     Bullet bullet;
 };
 
-enum enemiesTypes
+enum entityType
 {
-    enemyType_invader,
-    enemyType_ghost,
-    enemyType_mydak,
-    enemyType_boss,
+    entityType_invader,
+    entityType_ghost,
+    entityType_mydak,
+    entityType_boss,
+    entityType_player,
     
-    enemyType_count
+   entityType _count
 };
 
 struct Enemies

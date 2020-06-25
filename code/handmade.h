@@ -131,14 +131,51 @@ v2 v2_create(f32 x, f32 y)
     return result;
 }
 
+#define MAX_BULLETS 128
 
-struct Invader
+enum entityType
 {
-    v2 p;
-    f32 ddPlayer;
-    bool isAlive;
+    entityType_invader,
+    entityType_ghost,
+    entityType_mydak,
+    entityType_boss,
+    entityType_player,
+    
+    entityType_count
 };
 
+
+enum Movement
+  {
+   toLeft  = -1,
+   toRight = 1,
+  };
+
+struct Bullet
+{
+    v2 p;
+    v2 size;
+    bool fireAvailable;
+};
+
+struct Player
+{
+  v2 p;    
+  Bullet bullet;
+};
+
+struct Entity
+{
+  s32 width;
+  s32 height;
+
+  v2  pos;
+  v3  color;
+  
+  Bullet bullet;
+  bool isAlive;
+  entityType type;
+};
 
 struct Sprite
 {
@@ -150,42 +187,6 @@ struct Sprite
     s8 *frame[2];
 };
 
-struct Bullet
-{
-    v2 p;
-    v2 size;
-    bool fireAvailable;
-};
-
-struct Player
-{
-    v2 p;
-    u8 lives[3];
-    Bullet bullet;
-};
-
-enum enemiesTypes
-{
-    enemyType_invader,
-    enemyType_ghost,
-    enemyType_mydak,
-    enemyType_boss,
-    
-    enemyType_count
-};
-
-struct Enemies
-{
-    v2 p;
-    v3 color;
-    f32 ddPlayer;
-    v2 minBoundary;
-    v2 maxBoundary;
-    
-    bool isAlive;
-    enemiesTypes type;
-};
-
 
 struct memory_arena
 {
@@ -194,18 +195,18 @@ struct memory_arena
     sizet used;
 };
 
-#define MAX_BULLETS 128
-
-
+#define MAX_ENTITIES 34
 
 struct game_state
 {
-    memory_arena gameArena;
-    Player player;
-    Enemies enemies[34];
-    Sprite sprite[enemyType_count];
-    sizet numBullets;
-    Bullet bullets[MAX_BULLETS];
+  memory_arena gameArena;
+  Entity entities[MAX_ENTITIES];
+  Sprite sprite[entityType_count];
+  sizet numBullets;
+
+  Movement movement;
+  Player player;
+  Bullet bullets[MAX_BULLETS];
 };
 
 

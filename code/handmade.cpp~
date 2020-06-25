@@ -401,18 +401,18 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
 	  u32 currentFrame = gameState->sprite[0].time / gameState->sprite[0].frameDuration;
             
             
-            if((s32)gameState->enemies[10].p.x == 940)
+            if((s32)gameState->enemies[entityIndex].p.x == 940)
             { 
                 gameState->enemies[entityIndex].ddPlayer = -20.f;
                 gameState->enemies[entityIndex].p.y += 30;
             }
-            else if((s32)gameState->enemies[0].p.x == 0)
+            else if((s32)gameState->enemies[entityIndex].p.x == 0)
             {
                 gameState->enemies[entityIndex].ddPlayer = 20.f;
                 gameState->enemies[entityIndex].p.y += 30; 
-            }
+            }	    
             gameState->enemies[entityIndex].p.x +=  gameState->enemies[entityIndex].ddPlayer*input->dtForFrame;
-            
+	    
             switch(gameState->enemies[entityIndex].type)
             {
                 case enemyType_invader:
@@ -425,7 +425,7 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
                     s8* sprite = updateAnimation(gameState,enemyType_ghost,currentFrame);
                     drawGhost(backbuffer, sprite, gameState->enemies[entityIndex].p,
                               gameState->enemies[entityIndex].color);
-                    
+		    
                 }break;
                 case enemyType_mydak:
                 {
