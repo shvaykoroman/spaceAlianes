@@ -42,6 +42,82 @@ struct win32_state
     void *gameMemoryBlock;
 };
 
+
+// // // // // // NOTE(shvayko): audio
+
+#include "DSound.h"
+
+#define DIRECT_SOUND_CREATE(name) HRESULT WINAPI name(LPGUID lpGuid, LPDIRECTSOUND* ppDS, LPUNKNOWN  pUnkOuter)
+typedef DIRECT_SOUND_CREATE(direct_sound_create);
+
+global direct_sound_create *directSoundCreateProc;
+
+internal
+void audio()
+{
+
+}
+
+internal
+void initAudio(HWND window)
+{
+  HMODULE directSoundLib = LoadLibraryA("dsound.dll");
+
+  if(directSoundLib)
+    {
+      directSoundCreateProc = (direct_sound_create*)GetProcAddress(directSoundLib, "DirectSoundCreate");
+
+      LPDIRECTSOUNDBUFFER primaryBuffer;
+      LPDIRECTSOUNDBUFFER secondaryBuffer;
+      LPDIRECTSOUND directSound;
+
+      WAVEFORMATEX waveFormat    = {};
+      waveFormat.wFormatTag      = WAVE_FORMAT_PCM;
+      waveFormat.nChannels       = 2;
+      waveFormat.nSamplesPerSec  = 44100;
+      waveFormat.wBitsPerSample  = 16;
+      waveFormat.nBlockAlign     = waveFormat.nChannels * waveFormat.wBitsPerSample / 8;
+      waveFormat.nAvgBytesPerSec = waveFormat.nSamplesPerSec * waveFormat.nBlockAlign;
+	  
+      
+      if(SUCCEEDED(directSoundCreateProc(0,&directSound,0)))
+	{
+	  
+	  	  
+	  if(SUCCEEDED(directSound->SetCooperativeLevel(window, DSSCL_PRIORITY)))
+	    {
+	      DSBUFFERDESC bufferDesc   = {};
+	      bufferDesc.dwSize         = sizeof(bufferDesc);
+	      bufferDesc.dwFlags        = DSBCAPS_PRIMARYBUFFER;
+	      bufferDesc.lpwfxFormat    = 0; 
+	  
+	      if(SUCCEEDED(directSound->CreateSoundBuffer(&bufferDesc,&primaryBuffer,0)))
+		{	      
+		  if(SUCCEEDED(primaryBuffer->SetFormat(&waveFormat)))
+		    {
+		      OutputDebugString("primary buffer has been created");
+		    }
+		}
+	    }
+	  
+	  DSBUFFERDESC bufferDesc   = {};
+	  bufferDesc.dwSize         = sizeof(bufferDesc);
+	  bufferDesc.dwFlags        = 0;
+	  bufferDesc.dwBufferBytes  = 3 * waveFormat.nAvgBytesPerSec;
+	  bufferDesc.lpwfxFormat    = &waveFormat; 
+	  
+      
+	  if(SUCCEEDED(directSound->CreateSoundBuffer(&bufferDesc,&secondaryBuffer,0)))
+	    {	  
+	      OutputDebugString("secondary buffer has been created");
+	    }	  
+	}
+      
+    }
+}
+// // // // // // // // // //
+
+
 win32_file_content readEntireFile(char *filename)
 {
     win32_file_content result = {};
@@ -58,7 +134,7 @@ win32_file_content readEntireFile(char *filename)
         DWORD bytesRidden;
         if(ReadFile(fileHandle, result.memory,bytesToRead, &bytesRidden,0))
         {
-            
+	  // NOTE(shvayko): SUCCESS
         }
         else
         {
@@ -86,12 +162,12 @@ bool writeEntireFile(win32_file_content *file,char *filename)
         }
         else
         {
-            // TODO (logging) 
+	  
         }
     }
     else
     {
-        // TODO (logging) 
+      
     }
     
     return result;
@@ -469,7 +545,8 @@ int  WinMain(
     HWND window = CreateWindowExA(windowStyles,wc.lpszClassName, windowName,
                                   WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
                                   CW_USEDEFAULT,CW_USEDEFAULT, 0,0,hInstance,0);
-    
+
+    initAudio(window);
     ShowWindow(window, nShowCmd);
     // NOTE memory
     
@@ -553,7 +630,6 @@ int  WinMain(
         
         windowDimensionResult winDim = getWindowDimension(window);
         stretchDIbits(&backbuffer, deviceContext, winDim.width, winDim.height);
-        //renderSomething(&backbuffer,xOffset);
         GameBackbuffer gameBackbuffer;
         gameBackbuffer.memory = backbuffer.memory;
         gameBackbuffer.width = backbuffer.width;
@@ -576,7 +652,6 @@ int  WinMain(
         
         
         QueryPerformanceCounter(&currentTime);
-        // TODO(shvayko): this show not correct numbers
         s32 miliseconds = (s32)(secondsElapsedSoFar * 1000.f);
         s32 FPS = (s32)(1.f/secondsElapsedSoFar);
 #if 0
