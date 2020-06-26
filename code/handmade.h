@@ -28,7 +28,7 @@ typedef size_t sizet;
 
 #define assert(Expression); if(!(Expression)) {*(int*)0 = 0;}
 #define arrayCount(array) (sizeof(array) / sizeof(array[0]))
-#define invalidPath() assert("Invalid code path!\n")
+#define invalidCodePath() assert("Invalid code path!\n")
 
 struct GameBackbuffer
 {
@@ -169,7 +169,9 @@ struct Entity
   s32 width;
   s32 height;
 
+  s8 *invader;
   v2  pos;
+  v2  size;
   v3  color;
   
   Bullet bullet;
@@ -204,6 +206,10 @@ struct game_state
   Sprite sprite[entityType_count];
   sizet numBullets;
 
+  s8 *invader;
+  s8 *ghost;
+  s8 *mydak;
+  
   Movement movement;
   Player player;
   Bullet bullets[MAX_BULLETS];

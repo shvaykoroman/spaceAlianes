@@ -54,7 +54,7 @@ void drawRectangle(GameBackbuffer *backbuffer,  v2 playerPos, v2 playerSize, v3 
     
 }
 
-
+#if 0
 void // NOTE 8 11
 drawInvader(GameBackbuffer *backbuffer,s8 *invader, v2 pos, v3 color)
 {
@@ -132,6 +132,39 @@ drawBoss(GameBackbuffer *backbuffer,s8 *invader, v2 pos, v3 color)
         }
     }
 }
+#endif
+
+void
+drawEntity(GameBackbuffer *backbuffer, Entity *entity )
+{
+  switch(entity->type)
+    {
+    case entityType_invader:
+      {
+	
+      }break;
+    case entityType_ghost:
+      {
+
+      }break;
+    case entityType_mydak:
+      {
+
+      }break;
+    case entityType_boss:
+      {
+
+      }break;
+    case entityType_player:
+      {
+
+      }break;
+    default:
+      {
+	//invalidCodePath;
+      }break;
+    }
+}
 
 internal bool  
 checkCollision(v2 firstObjMin, v2 firstObjMax, v2 secondObjMin, v2 secondObjMax)
@@ -157,47 +190,50 @@ updateAnimation(game_state *gameState,u32 animation,u32 currentFrame)
 
 void
 initAliens(game_state *gameState)
-{
-    
-#if 1
-    for(s32 enemyIndex = 0; enemyIndex <  11; enemyIndex++)
-    {
-        gameState->enemies[enemyIndex].p = v2(200+50.f*enemyIndex,150.f);
-        gameState->enemies[enemyIndex].isAlive = true;
-        gameState->enemies[enemyIndex].type = enemyType_invader;
-        gameState->enemies[enemyIndex].color = v3(1.f,1.f,1.f);
-        gameState->enemies[enemyIndex].ddPlayer = 20.f;
-    }
-    for(s32 enemyIndex = 0; enemyIndex < 11; enemyIndex++)
-    {
-        gameState->enemies[enemyIndex+11].p = v2(200+50.f*enemyIndex,250.f);
-        gameState->enemies[enemyIndex+11].isAlive = true;
-        gameState->enemies[enemyIndex+11].type = enemyType_ghost;
-        gameState->enemies[enemyIndex+11].color = v3(1.f,0.f,0.f);
-        gameState->enemies[enemyIndex+11].ddPlayer = 20.f;
-    }
-    for(s32 enemyIndex = 0; enemyIndex <  11; enemyIndex++)
-    {
-        gameState->enemies[enemyIndex+22].p = v2(200+50.f*enemyIndex,350.f);
-        gameState->enemies[enemyIndex+22].isAlive = true;
-        gameState->enemies[enemyIndex+22].type = enemyType_mydak;
-        gameState->enemies[enemyIndex+22].color = v3(0.f,1.f,0.f);
-        gameState->enemies[enemyIndex+22].ddPlayer = 20.f;
-    }
-    gameState->enemies[33].p = v2(440.f,100.f);
-    gameState->enemies[33].isAlive = true;
-    gameState->enemies[33].type = enemyType_boss;
-    gameState->enemies[33].color = v3(.3f,1.f,0.7f);
-    gameState->enemies[33].ddPlayer = 60.f;
-#endif
+{   
+    for(s32 entityIndex = 0; entityIndex < MAX_ENTITIES - 1; entityIndex++)
+      {
+	s32 id = entityIndex / 11;
+
+	switch(id)
+	  {
+	  case 0:
+	    {
+	      gameState->entities[entityIndex].pos      = v2(200+50.f*entityIndex,150.f);
+	      gameState->entities[entityIndex].isAlive  = true;
+	      gameState->entities[entityIndex].type     = entityType_invader;
+	      gameState->entities[entityIndex].color    = v3(1.f,1.f,1.f);
+	    }break;
+	  case 1:
+	    {
+	      gameState->entities[entityIndex].pos      = v2(200+50.f*entityIndex,150.f);
+	      gameState->entities[entityIndex].isAlive  = true;
+	      gameState->entities[entityIndex].type     = entityType_ghost;
+	      gameState->entities[entityIndex].color    = v3(1.f,1.f,1.f);
+
+	    }break;
+	  case 2:
+	    {
+	      gameState->entities[entityIndex].pos      = v2(200+50.f*entityIndex,150.f);
+	      gameState->entities[entityIndex].isAlive  = true;
+	      gameState->entities[entityIndex].type     = entityType_mydak;
+	      gameState->entities[entityIndex].color    = v3(1.f,1.f,1.f);
+	
+	    }break;
+	  default:
+	    {
+	      // INVALID CODE PATH
+	    }break;
+	  }	
+      }
 }
 
 internal void
 initArena(memory_arena *arena, sizet size, u8 *base)
 {
-    arena->size = size;
-    arena->base = base;
-    arena->used = 0;
+  arena->size = size;
+  arena->base = base;
+  arena->used = 0;
 }
 
 #define pushStruct(arena,type)    (type *)pushSize_(arena,sizeof(type))
@@ -392,57 +428,57 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
     
     
     
-    for(u32 entityIndex = 0; entityIndex < arrayCount(gameState->enemies); entityIndex++)
+    for(u32 entityIndex = 0; entityIndex < arrayCount(gameState->entities); entityIndex++)
     {
-        if(gameState->enemies[entityIndex].isAlive)
+        if(gameState->entities[entityIndex].isAlive)
         {
             // NOTE(shvayko): updating the animation 
             // TODO(shvayko): do animation for all types of alienes!
 	  u32 currentFrame = gameState->sprite[0].time / gameState->sprite[0].frameDuration;
             
             
-            if((s32)gameState->enemies[entityIndex].p.x == 940)
+            if((s32)gameState->entities[entityIndex].pos.x == 940)
             { 
-                gameState->enemies[entityIndex].ddPlayer = -20.f;
-                gameState->enemies[entityIndex].p.y += 30;
+                gameState->movement = toLeft;
+                gameState->entities[entityIndex].pos.y += 30;
             }
-            else if((s32)gameState->enemies[entityIndex].p.x == 0)
+            else if((s32)gameState->entities[entityIndex].pos.x == 0)
             {
-                gameState->enemies[entityIndex].ddPlayer = 20.f;
-                gameState->enemies[entityIndex].p.y += 30; 
+	      gameState->movement = toRight;
+                gameState->entities[entityIndex].pos.y += 30; 
             }	    
-            gameState->enemies[entityIndex].p.x +=  gameState->enemies[entityIndex].ddPlayer*input->dtForFrame;
+            gameState->entities[entityIndex].pos.x +=  gameState->movement*input->dtForFrame;
 	    
-            switch(gameState->enemies[entityIndex].type)
-            {
-                case enemyType_invader:
+            switch(gameState->entities[entityIndex].type)
+	      {
+	      case entityType_invader:
                 {
-                    s8* sprite = updateAnimation(gameState,enemyType_invader,currentFrame);
-                    drawInvader(backbuffer,sprite, gameState->enemies[entityIndex].p, gameState->enemies[entityIndex].color);
+		  s8* sprite = updateAnimation(gameState,entityType_invader,currentFrame);
+		  //drawInvader(backbuffer,sprite, gameState->entity[entityIndex].pos, gameState->entity[entityIndex].color);
                 }break;
-                case enemyType_ghost:
+	      case entityType_ghost:
                 {
-                    s8* sprite = updateAnimation(gameState,enemyType_ghost,currentFrame);
-                    drawGhost(backbuffer, sprite, gameState->enemies[entityIndex].p,
-                              gameState->enemies[entityIndex].color);
+		  s8* sprite = updateAnimation(gameState,entityType_ghost,currentFrame);
+		  //drawGhost(backbuffer, sprite, gameState->entity[entityIndex].pos,
+		  // gameState->entities[entityIndex].color);
 		    
                 }break;
-                case enemyType_mydak:
+	      case entityType_mydak:
                 {
-                    s8* sprite = updateAnimation(gameState,enemyType_mydak,currentFrame);
-                    drawMudak(backbuffer, sprite, gameState->enemies[entityIndex].p, gameState->enemies[entityIndex].color);
+		  s8* sprite = updateAnimation(gameState,entityType_mydak,currentFrame);
+		  //drawMudak(backbuffer, sprite, gameState->entity[entityIndex].pos, gameState->entity[entityIndex].color);
                     
                 }break;
-                case enemyType_boss:
+	      case entityType_boss:
                 {
-                    drawBoss(backbuffer, (s8*)boss, gameState->enemies[entityIndex].p, gameState->enemies[entityIndex].color);
+		  //drawBoss(backbuffer, (s8*)boss, gameState->entity[entityIndex].pos, gameState->entity[entityIndex].color);
                     
                 }break;
-                default:
+	      default:
                 {
-                    invalidPath();
+		  invalidPath();
                 }
-            }
+	      }
         }
     }
     
@@ -458,16 +494,16 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
         gameState->player.bullet.fireAvailable = true;
     }
     
-    for(u32 entityIndex = 0; entityIndex < arrayCount(gameState->enemies); entityIndex++)
+    for(u32 entityIndex = 0; entityIndex < arrayCount(gameState->entities); entityIndex++)
     {
-        if(checkCollision(gameState->enemies[entityIndex].p,
+        if(checkCollision(gameState->entities[entityIndex].pos,
                           v2(7*5, 12*3),
                           gameState->player.bullet.p,
                           gameState->player.bullet.size)
-           && (gameState->enemies[entityIndex].isAlive))
+           && (gameState->entities[entityIndex].isAlive))
         {
             // TODO(shvayko): explosion
-            gameState->enemies[entityIndex].isAlive = false;
+            gameState->entities[entityIndex].isAlive = false;
             gameState->player.bullet.fireAvailable = true;
             gameState->player.bullet.p = gameState->player.p;
             break;
@@ -480,6 +516,6 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
         if(gameState->sprite[0].loop) gameState->sprite[0].time = 0;
     }
     
-    drawPlayer(backbuffer,  (s8*)player, gameState->player.p, v3(0.f,1.f,0.f));
+    //drawPlayer(backbuffer,  (s8*)player, gameState->player.p, v3(0.f,1.f,0.f));
 }
 

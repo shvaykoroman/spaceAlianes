@@ -11,18 +11,6 @@ operator+(v2 x ,v2 y)
 }
 
 inline v2
-operator+(v2 vec, s32 val)
-{
-  v2 result;
-
-  result.x = vec.x + val;
-  result.y = vec.y + val;
-
-  return result;
-  
-}
-
-inline v2
 operator*(v2 x, f32 a)
 {
     v2 result;
