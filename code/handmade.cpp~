@@ -54,116 +54,22 @@ void drawRectangle(GameBackbuffer *backbuffer,  v2 playerPos, v2 playerSize, v3 
     
 }
 
-#if 0
-void // NOTE 8 11
-drawInvader(GameBackbuffer *backbuffer,s8 *invader, v2 pos, v3 color)
-{
-    for(s32 y = 0; y < 8; y++)
-    {
-        for(s32 x = 0; x < 11; x++)
-        {
-            if(invader[y*11+x] == 1)
-            {
-                drawRectangle(backbuffer,  v2(pos.x+3.f*x,pos.y+3.f*y), v2(3.f,3.f), color);
-            }
-            
-        }
-    }
-}
-
-
-void 
-drawPlayer(GameBackbuffer *backbuffer,s8 *invader, v2 pos, v3 color)
-{
-    for(s32 y = 0; y < 9; y++)
-    {
-        for(s32 x = 0; x < 13; x++)
-        {
-            if(invader[y*13+x] == 1)
-            {
-                drawRectangle(backbuffer,  v2(pos.x+3.f*x,pos.y+3.f*y), v2(3.f,3.f), color);
-            }
-        }
-    }
-}
-
-void 
-drawGhost(GameBackbuffer *backbuffer,s8 *invader, v2 pos, v3 color)
-{
-    for(s32 y = 0; y < 8; y++)
-    {
-        for(s32 x = 0; x < 13; x++)
-        {
-            if(invader[y*13+x] == 1)
-            {
-                drawRectangle(backbuffer,  v2(pos.x+3.f*x,pos.y+3.f*y), v2(3.f,3.f), color);
-            }
-        }
-    }
-}
-
-void 
-drawMudak(GameBackbuffer *backbuffer,s8 *invader, v2 pos, v3 color)
-{
-    for(s32 y = 0; y < 7; y++)
-    {
-        for(s32 x = 0; x < 12; x++)
-        {
-            if(invader[y*12+x] == 1)
-            {
-                drawRectangle(backbuffer,  v2(pos.x+3.f*x,pos.y+3.f*y), v2(3.f,3.f), color);
-            }
-        }
-    }
-}
-
-
-void 
-drawBoss(GameBackbuffer *backbuffer,s8 *invader, v2 pos, v3 color)
-{
-    for(s32 y = 0; y < 7; y++)
-    {
-        for(s32 x = 0; x < 15; x++)
-        {
-            if(invader[y*15+x] == 1)
-            {
-                drawRectangle(backbuffer,  v2(pos.x+3.f*x,pos.y+3.f*y), v2(3.f,3.f), color);
-            }
-        }
-    }
-}
-#endif
-
 void
-drawEntity(GameBackbuffer *backbuffer, Entity *entity )
+drawEntity(GameBackbuffer *backbuffer, Entity *entity)
 {
-  switch(entity->type)
+  
+  for(s32 y = 0; y < entity->height; y++)
     {
-    case entityType_invader:
-      {
-	
-      }break;
-    case entityType_ghost:
-      {
-
-      }break;
-    case entityType_mydak:
-      {
-
-      }break;
-    case entityType_boss:
-      {
-
-      }break;
-    case entityType_player:
-      {
-
-      }break;
-    default:
-      {
-	//invalidCodePath;
-      }break;
+      for(s32 x = 0; x < entity->width; x++)
+	{
+	  if(entity->invader[y*entity->width+x])
+            {
+	      v2 pos = v2(entity->pos.x + entity->size.x * x,entity->pos.y + entity->size.y * y);
+	      drawRectangle(backbuffer,  pos, entity->size, entity->color);
+            }
+	}
     }
+  
 }
 
 internal bool  
@@ -200,29 +106,38 @@ initAliens(game_state *gameState)
 	  case 0:
 	    {
 	      gameState->entities[entityIndex].pos      = v2(200+50.f*entityIndex,150.f);
+	      gameState->entities[entityIndex].width    = 11;
+	      gameState->entities[entityIndex].height   = 8;	      
 	      gameState->entities[entityIndex].isAlive  = true;
 	      gameState->entities[entityIndex].type     = entityType_invader;
 	      gameState->entities[entityIndex].color    = v3(1.f,1.f,1.f);
+	      gameState->entities[entityIndex].invader  = gameState->invader;
+	      gameState->entities[entityIndex].size     = v2(3.f,3.f);
 	    }break;
 	  case 1:
 	    {
 	      gameState->entities[entityIndex].pos      = v2(200+50.f*entityIndex,150.f);
+	      gameState->entities[entityIndex].width    = 11;
+	      gameState->entities[entityIndex].height   = 8;	      
 	      gameState->entities[entityIndex].isAlive  = true;
 	      gameState->entities[entityIndex].type     = entityType_ghost;
-	      gameState->entities[entityIndex].color    = v3(1.f,1.f,1.f);
-
+	      gameState->entities[entityIndex].color    = v3(0.f,1.f,1.f);
+	      gameState->entities[entityIndex].invader  = gameState->ghost;
 	    }break;
 	  case 2:
 	    {
 	      gameState->entities[entityIndex].pos      = v2(200+50.f*entityIndex,150.f);
+	      gameState->entities[entityIndex].width    = 11;
+	      gameState->entities[entityIndex].height   = 8;	      
 	      gameState->entities[entityIndex].isAlive  = true;
 	      gameState->entities[entityIndex].type     = entityType_mydak;
-	      gameState->entities[entityIndex].color    = v3(1.f,1.f,1.f);
+	      gameState->entities[entityIndex].color    = v3(1.f,1.f,0.f);
+	      gameState->entities[entityIndex].invader  = gameState->mydak;
 	
 	    }break;
 	  default:
 	    {
-	      // INVALID CODE PATH
+	      invalidCodePath();
 	    }break;
 	  }	
       }
@@ -369,12 +284,13 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
         gameState->player.bullet.p = gameState->player.p;
         gameState->player.bullet.size  = v2(2,20);
         gameState->player.bullet.fireAvailable = true;
-        
-        /*for(u32 spriteIndex = 0; spriteIndex < enemyType_count; spriteIndex++)
-        {
-            gameState->sprite[spriteIndex] = pushStruct(&gameState->gameArena, s);
-        }*/
-        
+
+	gameState->invader = (s8*)invader;
+	gameState->ghost   = (s8*)ghost;
+	gameState->mydak   = (s8*)mudak;
+	
+	
+	
         gameState->sprite[0].loop = true;
         gameState->sprite[0].numFrames = 2;
         gameState->sprite[0].frameDuration = 10;
@@ -424,9 +340,9 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
     ddPlayer *= 128;
     gameState->player.p.x = gameState->player.p.x + ddPlayer*input->dtForFrame;
     
-    clearBackbuffer(backbuffer);
+    clearBackbuffer(backbuffer);    
     
-    
+    drawEntity(backbuffer, &gameState->entities[0]);
     
     for(u32 entityIndex = 0; entityIndex < arrayCount(gameState->entities); entityIndex++)
     {
@@ -476,7 +392,7 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
                 }break;
 	      default:
                 {
-		  invalidPath();
+		  invalidCodePath();
                 }
 	      }
         }

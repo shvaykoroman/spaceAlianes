@@ -97,50 +97,50 @@ updateAnimation(game_state *gameState,u32 animation,u32 currentFrame)
 void
 initAliens(game_state *gameState)
 {   
-    for(s32 entityIndex = 0; entityIndex < MAX_ENTITIES - 1; entityIndex++)
-      {
-	s32 id = entityIndex / 11;
-
-	switch(id)
-	  {
-	  case 0:
-	    {
-	      gameState->entities[entityIndex].pos      = v2(200+50.f*entityIndex,150.f);
-	      gameState->entities[entityIndex].width    = 11;
-	      gameState->entities[entityIndex].height   = 8;	      
-	      gameState->entities[entityIndex].isAlive  = true;
-	      gameState->entities[entityIndex].type     = entityType_invader;
-	      gameState->entities[entityIndex].color    = v3(1.f,1.f,1.f);
-	      gameState->entities[entityIndex].invader  = gameState->invader;
-	      gameState->entities[entityIndex].size     = v2(3.f,3.f);
-	    }break;
-	  case 1:
-	    {
-	      gameState->entities[entityIndex].pos      = v2(200+50.f*entityIndex,150.f);
-	      gameState->entities[entityIndex].width    = 11;
-	      gameState->entities[entityIndex].height   = 8;	      
-	      gameState->entities[entityIndex].isAlive  = true;
-	      gameState->entities[entityIndex].type     = entityType_ghost;
-	      gameState->entities[entityIndex].color    = v3(0.f,1.f,1.f);
-	      gameState->entities[entityIndex].invader  = gameState->ghost;
-	    }break;
-	  case 2:
-	    {
-	      gameState->entities[entityIndex].pos      = v2(200+50.f*entityIndex,150.f);
-	      gameState->entities[entityIndex].width    = 11;
-	      gameState->entities[entityIndex].height   = 8;	      
-	      gameState->entities[entityIndex].isAlive  = true;
-	      gameState->entities[entityIndex].type     = entityType_mydak;
-	      gameState->entities[entityIndex].color    = v3(1.f,1.f,0.f);
-	      gameState->entities[entityIndex].invader  = gameState->mydak;
+  //for(s32 entityIndex = 0; entityIndex < MAX_ENTITIES - 1; entityIndex++)
+  //{
 	
-	    }break;
-	  default:
+  for(s32 row = 0; row < 3; row++)
+    {
+      for(s32 column = 0; column < 11; column++)
+	{
+	  s32 width  = 12;
+	  s32 height = 8;
+	  
+	  s8 *alienShapeType   = gameState->invader;
+	  entityType alienType = entityType_invader;
+	  v3  alienColor       = v3(1.f,1.f,1.f);
+
+	  
+	  if(row == 1)
 	    {
-	      invalidCodePath();
-	    }break;
-	  }	
-      }
+	      width           = 13;
+	      height          = 8;
+	      alienShapeType  = gameState->ghost;
+	      alienColor      = v3(0.f,1.f,1.f);
+	      alienType       = entityType_ghost;
+	    }
+	  else if(row == 2)
+	    {
+	      width  = 11;
+	      height = 8;
+	      
+	      alienShapeType  = gameState->mydak;
+	      alienColor      = v3(1.f,1.f,0.f);
+	      alienType       = entityType_mydak;
+	    }
+		
+	  gameState->entities[column + row*11].pos      = v2(200+column*60.f,150.f+(row*60));
+	  gameState->entities[column + row*11].width    = width;
+	  gameState->entities[column + row*11].height   = height;	      
+	  gameState->entities[column + row*11].type     = alienType;
+	  gameState->entities[column + row*11].color    = alienColor;
+	  gameState->entities[column + row*11].invader  = alienShapeType;
+	  gameState->entities[column + row*11].size     = v2(3.f,3.f);
+	  gameState->entities[column + row*11].isAlive  = true;
+	}
+    }	
+	//}
 }
 
 internal void
@@ -276,7 +276,7 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
     
     if(!memory->memIsInit)
     {
-        initArena(&gameState->gameArena, memory->permanentStorageSize - sizeof(gameState),(u8*)memory->permanentStorage+sizeof(game_state));
+      initArena(&gameState->gameArena, memory->permanentStorageSize - sizeof(gameState),(u8*)memory->permanentStorage+sizeof(game_state));
         
         
         
@@ -284,13 +284,12 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
         gameState->player.bullet.p = gameState->player.p;
         gameState->player.bullet.size  = v2(2,20);
         gameState->player.bullet.fireAvailable = true;
-
+	
 	gameState->invader = (s8*)invader;
 	gameState->ghost   = (s8*)ghost;
 	gameState->mydak   = (s8*)mudak;
 	
-	
-	
+		
         gameState->sprite[0].loop = true;
         gameState->sprite[0].numFrames = 2;
         gameState->sprite[0].frameDuration = 10;
@@ -340,9 +339,7 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
     ddPlayer *= 128;
     gameState->player.p.x = gameState->player.p.x + ddPlayer*input->dtForFrame;
     
-    clearBackbuffer(backbuffer);    
-    
-    drawEntity(backbuffer, &gameState->entities[0]);
+    clearBackbuffer(backbuffer);       
     
     for(u32 entityIndex = 0; entityIndex < arrayCount(gameState->entities); entityIndex++)
     {
@@ -351,8 +348,8 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
             // NOTE(shvayko): updating the animation 
             // TODO(shvayko): do animation for all types of alienes!
 	  u32 currentFrame = gameState->sprite[0].time / gameState->sprite[0].frameDuration;
-            
-            
+	  
+#if 0            
             if((s32)gameState->entities[entityIndex].pos.x == 940)
             { 
                 gameState->movement = toLeft;
@@ -362,7 +359,9 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
             {
 	      gameState->movement = toRight;
                 gameState->entities[entityIndex].pos.y += 30; 
-            }	    
+            }
+#endif
+	    
             gameState->entities[entityIndex].pos.x +=  gameState->movement*input->dtForFrame;
 	    
             switch(gameState->entities[entityIndex].type)
@@ -370,24 +369,20 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
 	      case entityType_invader:
                 {
 		  s8* sprite = updateAnimation(gameState,entityType_invader,currentFrame);
-		  //drawInvader(backbuffer,sprite, gameState->entity[entityIndex].pos, gameState->entity[entityIndex].color);
+		  drawEntity(backbuffer, &gameState->entities[entityIndex]);
                 }break;
 	      case entityType_ghost:
                 {
 		  s8* sprite = updateAnimation(gameState,entityType_ghost,currentFrame);
-		  //drawGhost(backbuffer, sprite, gameState->entity[entityIndex].pos,
-		  // gameState->entities[entityIndex].color);
-		    
+		  drawEntity(backbuffer, &gameState->entities[entityIndex]);		    
                 }break;
 	      case entityType_mydak:
                 {
 		  s8* sprite = updateAnimation(gameState,entityType_mydak,currentFrame);
-		  //drawMudak(backbuffer, sprite, gameState->entity[entityIndex].pos, gameState->entity[entityIndex].color);
-                    
+		  drawEntity(backbuffer, &gameState->entities[entityIndex]);                    
                 }break;
 	      case entityType_boss:
                 {
-		  //drawBoss(backbuffer, (s8*)boss, gameState->entity[entityIndex].pos, gameState->entity[entityIndex].color);
                     
                 }break;
 	      default:
@@ -401,36 +396,36 @@ extern "C" GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
     // TODO(shvayko): collision detection with enemies and with arena
     if(!(gameState->player.bullet.p.y <= 0)
        && (!gameState->player.bullet.fireAvailable))  
-    {
+      {
         gameState->player.bullet.p.y -= 10; // NOTE(shvayko): speed of the bullet
         drawRectangle(backbuffer, gameState->player.bullet.p, gameState->player.bullet.size,v3(1.f,0.0f, 0.0f));
-    }
+      }
     else
-    {
+      {
         gameState->player.bullet.fireAvailable = true;
-    }
+      }
     
     for(u32 entityIndex = 0; entityIndex < arrayCount(gameState->entities); entityIndex++)
-    {
+      {
         if(checkCollision(gameState->entities[entityIndex].pos,
                           v2(7*5, 12*3),
                           gameState->player.bullet.p,
                           gameState->player.bullet.size)
            && (gameState->entities[entityIndex].isAlive))
-        {
+	  {
             // TODO(shvayko): explosion
             gameState->entities[entityIndex].isAlive = false;
             gameState->player.bullet.fireAvailable = true;
             gameState->player.bullet.p = gameState->player.p;
             break;
-        }
-    }
+	  }
+      }
     
     ++gameState->sprite[0].time;
     if(gameState->sprite[0].time == (gameState->sprite[0].numFrames * gameState->sprite[0].frameDuration))
-    {
+      {
         if(gameState->sprite[0].loop) gameState->sprite[0].time = 0;
-    }
+      }
     
     //drawPlayer(backbuffer,  (s8*)player, gameState->player.p, v3(0.f,1.f,0.f));
 }
